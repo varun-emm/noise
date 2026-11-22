@@ -5,139 +5,163 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#16181b">
+<meta name="theme-color" content="#c4c6c8">
 <title>Noise Meter</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow+Semi+Condensed:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,400;0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
 <style>
+@font-face{font-family:"DSEG7";src:url("fonts/DSEG7Classic-Italic.woff2") format("woff2");font-display:block}
 :root{
-  /* A satin-steel instrument: one machined dial with an etched dB scale and a red needle,
-     and a machined plate at the foot carrying the digital reading. */
-  --steel-1:#3a3e44; --steel-2:#24272b; --steel-3:#16181b;
-  --face:#0d0e10; --etch:#ece6da; --etch-dim:#8d8a84;
-  --red:#e3342b; --amber:#e9a23b; --green:#5fbf7f;
-  --brush:rgba(255,255,255,.05);
+  /* A hi-fi front panel: brushed aluminium, a backlit VU-style window with a swinging needle,
+     and a Casio-style LCD beneath it for the numbers. */
+  --ink:#1d1c1a; --red:#c8392b; --face-hot:#fff6de; --face:#f1e6c8; --face-edge:#d9c89f;
+  --lcd-1:#c7cfb3; --lcd-2:#b0b99b; --seg:#1e2419; --ghost:rgba(30,36,25,.07);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
-html,body{height:100%;overflow:hidden;background:var(--steel-3)}
+html,body{height:100%;overflow:hidden}
 body{
-  color:var(--etch);font-family:"Barlow Semi Condensed",-apple-system,sans-serif;
+  font-family:"Jost",-apple-system,sans-serif;color:var(--ink);
   background:
-    repeating-linear-gradient(90deg,var(--brush) 0 1px,transparent 1px 3px),
-    radial-gradient(120% 70% at 50% 0%,var(--steel-1),var(--steel-2) 55%,var(--steel-3));
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(20px,5vh,44px);
-  padding:calc(env(safe-area-inset-top) + 16px) 18px calc(env(safe-area-inset-bottom) + 18px);
+    repeating-linear-gradient(0deg,rgba(255,255,255,.22) 0 1px,rgba(0,0,0,.035) 1px 2px,transparent 2px 3px),
+    linear-gradient(180deg,#d6d8da 0%,#c3c5c8 40%,#b3b6b9 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(22px,4.5vh,40px);
+  padding:calc(env(safe-area-inset-top) + 18px) 18px calc(env(safe-area-inset-bottom) + 18px);
 }
+.engrave{font-style:italic;font-weight:600;letter-spacing:.06em;color:#2e2f31;
+  text-shadow:0 1px 0 rgba(255,255,255,.65),0 -1px 0 rgba(0,0,0,.12)}
 
-/* ---------- dial ---------- */
-.dial{position:relative;width:min(92vw,58vh,440px);aspect-ratio:1}
-.bezel{position:absolute;inset:0;border-radius:50%;
-  background:conic-gradient(from 200deg,#6d727a,#2b2e33 18%,#9aa0a8 33%,#33363b 50%,#80858d 66%,#2a2d31 82%,#6d727a);
-  box-shadow:0 18px 40px rgba(0,0,0,.6),0 2px 0 rgba(255,255,255,.08) inset}
-.face{position:absolute;inset:4.2%;border-radius:50%;
-  background:radial-gradient(circle at 50% 38%,#1c1e22,var(--face) 70%);
-  box-shadow:inset 0 6px 18px rgba(0,0,0,.9),inset 0 -2px 0 rgba(255,255,255,.04)}
-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-.num{font-family:"Barlow Condensed",sans-serif;font-weight:600;fill:var(--etch);text-anchor:middle;dominant-baseline:central}
-.unit{font-family:"Barlow Condensed",sans-serif;font-weight:500;fill:var(--etch-dim);text-anchor:middle;letter-spacing:.18em}
-#needle{filter:drop-shadow(0 3px 3px rgba(0,0,0,.7))}
-.glass{position:absolute;inset:4.2%;border-radius:50%;pointer-events:none;
-  background:linear-gradient(160deg,rgba(255,255,255,.07),transparent 38%)}
-
-/* ---------- plate ---------- */
-.plate{position:relative;width:min(92vw,440px);border-radius:14px;padding:14px 20px 12px;text-align:center;
+/* ---------- meter window ---------- */
+.meter{width:min(94vw,460px);display:flex;flex-direction:column;align-items:center;gap:14px}
+.frame{position:relative;width:100%;aspect-ratio:400/262;border-radius:10px;padding:12px;
+  background:linear-gradient(180deg,#2b2c2e,#121314 60%,#1d1e20);
+  box-shadow:0 1px 0 rgba(255,255,255,.7),0 14px 26px rgba(0,0,0,.28),inset 0 2px 3px rgba(0,0,0,.8)}
+.window{position:relative;width:100%;height:100%;border-radius:4px;overflow:hidden;
   background:
-    repeating-linear-gradient(90deg,rgba(255,255,255,.06) 0 1px,transparent 1px 2px),
-    linear-gradient(180deg,#5b6068,#3a3e44 45%,#2c2f34);
-  box-shadow:0 10px 24px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.25),inset 0 -1px 0 rgba(0,0,0,.5)}
-.plate::before,.plate::after{content:"";position:absolute;top:50%;width:9px;height:9px;margin-top:-4.5px;border-radius:50%;
-  background:radial-gradient(circle at 35% 35%,#c9cdd3,#4a4e55);box-shadow:inset 0 0 0 1px rgba(0,0,0,.4)}
-.plate::before{left:12px}.plate::after{right:12px}
-.window{display:inline-flex;align-items:baseline;gap:6px;padding:4px 18px 2px;border-radius:8px;
-  background:#0b0c0e;box-shadow:inset 0 3px 8px rgba(0,0,0,.9),0 1px 0 rgba(255,255,255,.15)}
-#digital{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:clamp(52px,9vh,76px);line-height:1.05;
-  font-variant-numeric:tabular-nums;letter-spacing:.02em;color:var(--etch);min-width:2.2ch;text-align:right;
-  text-shadow:0 0 14px rgba(236,230,218,.25);transition:color .4s}
-.db{font-family:"Barlow Condensed",sans-serif;font-weight:600;font-size:20px;color:var(--etch-dim);letter-spacing:.12em}
-#status{margin-top:8px;font-family:"Barlow Condensed",sans-serif;font-weight:600;font-size:15px;letter-spacing:.28em;
-  text-transform:uppercase;color:#1a1c1f;text-shadow:0 1px 0 rgba(255,255,255,.25)}
+    radial-gradient(70% 55% at 50% 100%,rgba(255,226,160,.55),transparent 70%),
+    radial-gradient(120% 90% at 50% 45%,var(--face-hot),var(--face) 55%,var(--face-edge));
+  box-shadow:inset 0 10px 16px -6px rgba(0,0,0,.55),inset 8px 0 14px -8px rgba(0,0,0,.45),inset -8px 0 14px -8px rgba(0,0,0,.45)}
+.window svg{position:absolute;inset:0;width:100%;height:100%}
+.glass{position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(115deg,rgba(255,255,255,.28) 0%,rgba(255,255,255,.06) 30%,transparent 31%,transparent 70%,rgba(255,255,255,.08) 71%,transparent 85%)}
+.num{font-family:"Jost",sans-serif;font-weight:500;text-anchor:middle;dominant-baseline:central}
+#needle{filter:drop-shadow(3px 2px 1.5px rgba(0,0,0,.28))}
 
-/* mic prompt, only if the browser blocks auto-start */
-#gate{position:fixed;inset:0;display:none;align-items:center;justify-content:center;
-  background:rgba(10,11,13,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
-#gate span{font-family:"Barlow Condensed",sans-serif;font-weight:600;letter-spacing:.24em;text-transform:uppercase;
-  font-size:15px;padding:14px 22px;border-radius:999px;color:var(--etch);border:1px solid rgba(236,230,218,.35);text-align:center;max-width:80vw;line-height:1.5}
+/* ---------- LCD ---------- */
+.calc{width:min(94vw,460px);border-radius:14px;padding:12px;
+  background:linear-gradient(180deg,#3a3b3d,#1f2022);
+  box-shadow:0 1px 0 rgba(255,255,255,.7),0 12px 22px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.12)}
+.lcd{border-radius:6px;padding:10px 14px 9px;
+  background:linear-gradient(180deg,var(--lcd-1),var(--lcd-2));
+  box-shadow:inset 0 3px 8px rgba(0,0,0,.45),inset 0 -1px 0 rgba(255,255,255,.25)}
+.reads{display:grid;grid-template-columns:1fr 1px 1fr;gap:12px;align-items:end}
+.rule{align-self:stretch;background:rgba(30,36,25,.18)}
+.read{display:flex;flex-direction:column;align-items:flex-end}
+.tag{align-self:flex-start;font-weight:600;font-size:12px;letter-spacing:.14em;color:var(--seg)}
+.digits{position:relative;font-family:"DSEG7",monospace;font-size:clamp(40px,11vw,52px);line-height:1.1;color:var(--seg);
+  text-shadow:1px 1px 0 rgba(30,36,25,.12)}
+.digits .ghost{position:absolute;right:0;top:0;color:var(--ghost);text-shadow:none}
+.digits .val{position:relative}
+.u{font-weight:600;font-size:11px;letter-spacing:.12em;color:var(--seg);margin-top:2px}
+.flags{display:flex;justify-content:space-between;margin-top:8px;padding-top:6px;border-top:1px solid rgba(30,36,25,.14);
+  font-weight:600;font-size:10.5px;letter-spacing:.1em}
+.flags span{color:var(--ghost);transition:color .15s}
+.flags span.on{color:var(--seg)}
+.flags span.on.hot{color:#3d1410}
+
+#gate{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(40,40,42,.35);
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+#gate span{font-weight:600;letter-spacing:.2em;text-transform:uppercase;font-size:14px;padding:14px 22px;border-radius:999px;
+  background:#1f2022;color:#eee;text-align:center;max-width:82vw;line-height:1.5}
 </style>
 </head>
 <body>
 
-<div class="dial" aria-hidden="true">
-  <div class="bezel"></div>
-  <div class="face"></div>
-  <svg viewBox="0 0 400 400" id="svg">
-    <g id="scale"></g>
-    <text class="unit" x="200" y="272" font-size="17">dB</text>
-    <path id="peak" d="M0 0" fill="var(--amber)"/>
-    <g id="needle">
-      <path d="M196.6 214 L198.6 62 Q200 56 201.4 62 L203.4 214 Z" fill="var(--red)"/>
-      <path d="M197 214 L197 246 Q200 252 203 246 L203 214 Z" fill="#2a2c30"/>
-    </g>
-    <circle cx="200" cy="200" r="17" fill="url(#hub)"/>
-    <circle cx="200" cy="200" r="5" fill="#0d0e10"/>
-    <defs>
-      <radialGradient id="hub" cx="40%" cy="35%"><stop offset="0" stop-color="#b9bec5"/><stop offset=".55" stop-color="#555a61"/><stop offset="1" stop-color="#25282c"/></radialGradient>
-    </defs>
-  </svg>
-  <div class="glass"></div>
+<div class="meter" aria-hidden="true">
+  <div class="frame">
+    <div class="window">
+      <svg viewBox="0 0 400 238" id="svg">
+        <defs><clipPath id="clip"><rect width="400" height="238"/></clipPath></defs>
+        <g id="scale"></g>
+        <text x="200" y="168" class="num" font-size="40" font-style="italic" font-weight="600" fill="#2a2926">dB</text>
+        <text x="200" y="196" class="num" font-size="9.5" letter-spacing="2.2" fill="#6b6455">SOUND PRESSURE LEVEL</text>
+        <g clip-path="url(#clip)">
+          <g id="needle">
+            <line x1="200" y1="330" x2="200" y2="118" stroke="#1b1a18" stroke-width="2.4" stroke-linecap="round"/>
+            <line x1="200" y1="118" x2="200" y2="84" stroke="var(--red)" stroke-width="2.4" stroke-linecap="round"/>
+          </g>
+        </g>
+      </svg>
+      <div class="glass"></div>
+    </div>
+  </div>
+  <div class="engrave" style="font-size:15px">SOUND LEVEL</div>
 </div>
 
-<div class="plate" role="status" aria-live="polite">
-  <div class="window"><span id="digital">--</span><span class="db">dB</span></div>
-  <div id="status">Listening</div>
+<div class="calc" role="status" aria-live="polite">
+  <div class="lcd">
+    <div class="reads">
+      <div class="read">
+        <span class="tag">NOW</span>
+        <div class="digits"><span class="ghost">88.8</span><span class="val" id="now">!!.!</span></div>
+        <span class="u">dB</span>
+      </div>
+      <div class="rule"></div>
+      <div class="read">
+        <span class="tag">AVG</span>
+        <div class="digits"><span class="ghost">88.8</span><span class="val" id="avg">!!.!</span></div>
+        <span class="u">dB</span>
+      </div>
+    </div>
+    <div class="flags" id="flags">
+      <span>QUIET</span><span>CALM</span><span>MODERATE</span><span>LOUD</span><span>HARMFUL</span>
+    </div>
+  </div>
 </div>
 
 <div id="gate"><span id="gateText">Tap to start</span></div>
 
 <script>
 (() => {
-  const MIN = 30, MAX = 130;          // scale range, dB
-  const A0 = -135, A1 = 135;          // needle sweep, degrees (0 = straight up)
+  const MIN = 30, MAX = 120;          // scale range, dB
+  const SWEEP = 37;                   // needle swing either side of centre, degrees
   const CAL = 94;                     // dBFS → approximate dB SPL offset for phone mics
-  const CX = 200, CY = 200;
+  const PX = 200, PY = 330;           // pivot sits below the window, like a real VU meter
   const $ = id => document.getElementById(id);
-  const ang = db => A0 + (Math.min(MAX, Math.max(MIN, db)) - MIN) / (MAX - MIN) * (A1 - A0);
-  const pt = (a, r) => { const t = (a - 90) * Math.PI / 180; return [CX + r * Math.cos(t), CY + r * Math.sin(t)]; };
+  const ang = db => -SWEEP + (Math.min(MAX, Math.max(MIN, db)) - MIN) / (MAX - MIN) * SWEEP * 2;
+  const pt = (a, r) => { const t = a * Math.PI / 180; return [PX + r * Math.sin(t), PY - r * Math.cos(t)]; };
 
-  /* ---------- etch the scale ---------- */
-  const NS = 'http://www.w3.org/2000/svg';
-  const g = $('scale');
-  const el = (tag, attrs) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); g.appendChild(e); return e; };
-  const arc = (d0, d1, r, w, color) => {
-    const a0 = ang(d0), a1 = ang(d1), [x0, y0] = pt(a0, r), [x1, y1] = pt(a1, r);
-    el('path', { d: `M${x0} ${y0} A${r} ${r} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${x1} ${y1}`, fill: 'none', stroke: color, 'stroke-width': w, 'stroke-linecap': 'butt' });
-  };
-  arc(70, 85, 163, 7, 'var(--amber)');
-  arc(85, MAX, 163, 7, 'var(--red)');
-  for (let d = MIN; d <= MAX; d += 2) {
-    const major = d % 10 === 0, mid = d % 10 === 5 && !major;
-    const a = ang(d), r0 = major ? 146 : mid ? 152 : 156, [x0, y0] = pt(a, r0), [x1, y1] = pt(a, 168);
-    el('line', { x1: x0, y1: y0, x2: x1, y2: y1, stroke: d >= 85 ? 'var(--red)' : 'var(--etch)', 'stroke-width': major ? 3.2 : mid ? 2 : 1.2, opacity: major ? 1 : .75 });
+  /* ---------- print the scale ---------- */
+  const NS = 'http://www.w3.org/2000/svg', g = $('scale');
+  const el = (tag, attrs, text) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; g.appendChild(e); return e; };
+  const arcPath = (d0, d1, r) => { const [x0, y0] = pt(ang(d0), r), [x1, y1] = pt(ang(d1), r); return `M${x0} ${y0} A${r} ${r} 0 0 1 ${x1} ${y1}`; };
+  const R = 232, HOT = 85;
+
+  el('path', { d: arcPath(MIN, HOT, R), fill: 'none', stroke: 'var(--ink)', 'stroke-width': 1.6 });
+  el('path', { d: arcPath(HOT, MAX, R), fill: 'none', stroke: 'var(--red)', 'stroke-width': 1.6 });
+  // band under the arc: hollow for safe, solid red for harmful
+  el('path', { d: arcPath(MIN + .6, HOT - .6, R - 12), fill: 'none', stroke: 'var(--ink)', 'stroke-width': 7 });
+  el('path', { d: arcPath(MIN + 1.1, HOT - 1.1, R - 12), fill: 'none', stroke: 'var(--face)', 'stroke-width': 4.4 });
+  el('path', { d: arcPath(HOT + .6, MAX, R - 12), fill: 'none', stroke: 'var(--red)', 'stroke-width': 7 });
+
+  for (let d = MIN; d <= MAX; d += 2.5) {
+    const major = d % 10 === 0, half = d % 5 === 0 && !major;
+    const a = ang(d), hot = d >= HOT;
+    const [x0, y0] = pt(a, R), [x1, y1] = pt(a, R + (major ? 16 : half ? 10 : 6));
+    el('line', { x1: x0, y1: y0, x2: x1, y2: y1, stroke: hot ? 'var(--red)' : 'var(--ink)', 'stroke-width': major ? 3 : half ? 1.6 : .9 });
     if (major) {
-      const [tx, ty] = pt(a, 124);
-      const t = el('text', { x: tx, y: ty, class: 'num', 'font-size': 24 });
-      t.textContent = d;
-      if (d >= 90) t.setAttribute('fill', 'var(--red)');
+      const [tx, ty] = pt(a, R + 33);
+      el('text', { x: tx, y: ty, class: 'num', 'font-size': 21, fill: hot ? 'var(--red)' : 'var(--ink)' }, d);
     }
   }
+  { const [x, y] = pt(-SWEEP - 6, R + 22); el('text', { x, y, class: 'num', 'font-size': 26, fill: 'var(--ink)' }, '–'); }
+  { const [x, y] = pt(SWEEP + 6, R + 22); el('text', { x, y, class: 'num', 'font-size': 26, fill: 'var(--red)' }, '+'); }
 
-  /* ---------- reading ---------- */
-  const LEVELS = [
-    [40, 'Quiet', 'var(--etch)'], [55, 'Calm', 'var(--etch)'], [70, 'Moderate', 'var(--etch)'],
-    [85, 'Loud', 'var(--amber)'], [100, 'Harmful', 'var(--red)'], [999, 'Dangerous', 'var(--red)']
-  ];
-  let ctx, analyser, stream, buf, raf, live = false, starting = false;
-  let target = MIN, shown = MIN, angle = A0, vel = 0, peak = MIN, lastUI = 0, wake = null;
+  /* ---------- measuring ---------- */
+  const BANDS = [40, 55, 70, 85, Infinity];   // QUIET, CALM, MODERATE, LOUD, HARMFUL
+  const flags = [...$('flags').children];
+  let ctx, analyser, stream, buf, live = false, starting = false, wake = null;
+  let level = MIN, shown = MIN, angle = -SWEEP - 3, vel = 0, energy = 0, count = 0, lastUI = 0, lastAvg = 0;
 
   async function start() {
     if (live || starting) return;
@@ -161,16 +185,14 @@ svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
     }
     starting = false;
   }
-
   function stop() {
     live = false;
     try { stream?.getTracks().forEach(t => t.stop()); } catch (e) {}
     try { ctx?.close(); } catch (e) {}
     try { wake?.release(); } catch (e) {}
     stream = ctx = analyser = wake = null;
-    target = MIN;
+    level = MIN - 5;
   }
-
   function gate(msg) { $('gateText').textContent = msg; $('gate').style.display = 'flex'; }
   $('gate').addEventListener('click', async () => {
     if (ctx && ctx.state !== 'running') {
@@ -183,44 +205,39 @@ svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
   function sample() {
     analyser.getFloatTimeDomainData(buf);
     let s = 0; for (let i = 0; i < buf.length; i++) s += buf[i] * buf[i];
-    const db = 20 * Math.log10(Math.max(Math.sqrt(s / buf.length), 1e-8)) + CAL;
-    target = Math.max(0, db);
+    level = Math.max(0, 20 * Math.log10(Math.max(Math.sqrt(s / buf.length), 1e-8)) + CAL);
   }
+  const fmt = v => (Math.min(199.9, Math.max(0, v))).toFixed(1).padStart(4, '!');  // '!' is a blank cell in DSEG
 
-  /* needle: a damped spring, so it swings and settles like a real gauge */
+  /* needle: VU-style ballistics — about 300 ms to settle, with a touch of overshoot */
   let last = performance.now();
   function frame(now) {
     const dt = Math.min(0.05, (now - last) / 1000); last = now;
     if (live && analyser) sample();
-    shown += (target - shown) * Math.min(1, dt * 6);
-    const goal = ang(target);
-    vel += ((goal - angle) * 120 - vel * 17) * dt;
+    shown += (level - shown) * Math.min(1, dt * 5);
+    const goal = level < MIN ? -SWEEP - 3 : ang(level);
+    vel += ((goal - angle) * 140 - vel * 19) * dt;
     angle += vel * dt;
-    if (angle < A0) { angle = A0; vel = Math.max(0, vel); }
-    if (angle > A1 + 3) { angle = A1 + 3; vel = Math.min(0, vel); }
-    $('needle').setAttribute('transform', `rotate(${angle.toFixed(2)} ${CX} ${CY})`);
+    if (angle < -SWEEP - 3) { angle = -SWEEP - 3; vel = Math.max(0, vel); }
+    if (angle > SWEEP + 4) { angle = SWEEP + 4; vel = Math.min(0, vel); }
+    $('needle').setAttribute('transform', `rotate(${angle.toFixed(2)} ${PX} ${PY})`);
 
-    if (live && shown > peak) peak = shown;
-    if (now - lastUI > 120) {
+    if (live && now - lastAvg > 100) { lastAvg = now; energy += Math.pow(10, shown / 10); count++; }
+    if (live && now - lastUI > 150) {
       lastUI = now;
-      if (live) {
-        const v = Math.round(shown), lv = LEVELS.find(l => shown < l[0]);
-        $('digital').textContent = v;
-        $('digital').style.color = lv[2];
-        $('status').textContent = lv[1];
-        // peak-hold telltale on the outer ring
-        const a = ang(peak), [x, y] = pt(a, 176), [l1x, l1y] = pt(a - 2.2, 186), [l2x, l2y] = pt(a + 2.2, 186);
-        $('peak').setAttribute('d', `M${x} ${y} L${l1x} ${l1y} L${l2x} ${l2y} Z`);
-      }
+      $('now').textContent = fmt(shown);
+      if (count) $('avg').textContent = fmt(10 * Math.log10(energy / count));
+      const b = BANDS.findIndex(x => shown < x);
+      flags.forEach((f, i) => { f.classList.toggle('on', i === b); f.classList.toggle('hot', i === 4); });
     }
-    raf = requestAnimationFrame(frame);
+    requestAnimationFrame(frame);
   }
-  raf = requestAnimationFrame(frame);
+  requestAnimationFrame(frame);
 
-  /* auto start on open, auto stop when the page is hidden or closed */
+  /* auto start on open; auto stop when the page is hidden or closed */
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') stop();
-    else { peak = MIN; start(); }
+    else { energy = 0; count = 0; start(); }
   });
   window.addEventListener('pagehide', stop);
   window.addEventListener('pageshow', e => { if (e.persisted) start(); });
